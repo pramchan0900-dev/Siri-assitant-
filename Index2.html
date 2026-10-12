@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siri Style Assistant</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #000;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 55px;
+}
+
+.orb {
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%,
+      #ffffff 0%, #8cecff 12%, transparent 35%),
+    conic-gradient(
+      #48e5ff,
+      #6477ff,
+      #d66bff,
+      #ff6fae,
+      #63f5d4,
+      #48e5ff
+    );
+  box-shadow:
+    0 0 25px #58cfff88,
+    0 0 65px #8b5cff55;
+  animation: glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+  }
+  to {
+    transform: scale(1.04);
+    filter: brightness(1.2);
+  }
+}
+
+p {
+  color: #aaa;
+  margin-top: 45px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 18px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 1px solid #444;
+  background: #191919;
+  color: white;
+  font-size: 27px;
+}
+
+button:active {
+  background: #333;
+}
+</style>
+</head>
+
+<body>
+  <h1>Hey Siri</h1>
+
+  <div class="orb"></div>
+
+  <p>How can I help you?</p>
+
+  <button onclick="speak()" aria-label="Speak">🎙</button>
+
+<script>
+function speak() {
+  if (!("speechSynthesis" in window)) {
+    alert("Voice support is not available in this preview.");
+    return;
+  }
+
+  const message = new SpeechSynthesisUtterance(
+    "Hello Prem, how can I help you?"
+  );
+
+  message.lang = "en-US";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(message);
+}
+</script>
+</body>
+</html>
