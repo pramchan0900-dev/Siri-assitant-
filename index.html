@@ -43,9 +43,9 @@ function speak(){
   return;
  }
  const msg=new SpeechSynthesisUtterance(
-  "Hello Prem, how can I help you?"
+  "Namaste! Main aapki kya madad kar sakti hoon?"
  );
- msg.lang="en-US";
+ msg.lang="hi-IN";
  speechSynthesis.cancel();
  speechSynthesis.speak(msg);
 }
