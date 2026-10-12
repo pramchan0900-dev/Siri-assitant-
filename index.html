@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +48,40 @@ function speak(){
  speechSynthesis.cancel();
  speechSynthesis.speak(msg);
 }
+ function listen() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    document.getElementById("status").textContent =
+      "Chrome mein voice recognition support nahi hai.";
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "hi-IN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  document.getElementById("status").textContent = "Suno, main sun rahi hoon...";
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    const words = event.results[0][0].transcript;
+    document.getElementById("status").textContent = words;
+
+    const answer = new SpeechSynthesisUtterance(
+      "Aapne kaha " + words + ". Main aapki baat sun rahi hoon."
+    );
+    answer.lang = "hi-IN";
+    speechSynthesis.speak(answer);
+  };
+
+  recognition.onerror = function() {
+    document.getElementById("status").textContent =
+      "Microphone permission check karo.";
+  };
+ }
 </script>
 </body>
 </html>
