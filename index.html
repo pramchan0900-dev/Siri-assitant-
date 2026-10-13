@@ -1,87 +1,117 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hey Siri</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siri Assistant</title>
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;min-height:100vh;background:#000;color:#fff;
- font-family:Arial,sans-serif;display:flex;flex-direction:column;
- align-items:center;justify-content:center;text-align:center
+body {
+  background: #050510;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 50px 15px;
 }
-h1{font-size:30px;font-weight:500;margin-bottom:55px}
-.orb{
- width:190px;height:190px;border-radius:50%;
- background:conic-gradient(#55eaff,#6875ff,#d66bff,#ff6da9,#6af5d1,#55eaff);
- box-shadow:0 0 30px #57cfff88,0 0 70px #9366ff55;
- animation:glow 3s infinite alternate
+.orb {
+  width: 180px;
+  height: 180px;
+  margin: 35px auto;
+  border-radius: 50%;
+  background: conic-gradient(cyan, blue, violet, pink, cyan);
+  box-shadow: 0 0 45px #45dfff;
+  animation: glow 2s infinite alternate;
 }
-@keyframes glow{
- from{transform:scale(.96);filter:brightness(.9)}
- to{transform:scale(1.04);filter:brightness(1.2)}
+@keyframes glow {
+  to { transform: scale(1.08); }
 }
-p{color:#aaa;margin-top:45px}
-button{
- margin-top:18px;width:68px;height:68px;border-radius:50%;
- border:1px solid #444;background:#191919;color:white;font-size:27px
+button, select {
+  padding: 14px;
+  border-radius: 25px;
+  font-size: 18px;
+  margin: 8px;
 }
+#status { color: #8deaff; }
 </style>
 </head>
 <body>
+
 <h1>Hey Siri</h1>
 <div class="orb"></div>
-<p id="status">How can I help you?</p>
-<button onclick="listen()">🎙️</button>
-<script>
-function speak(){
- if(!("speechSynthesis" in window)){
-  document.getElementById("status").textContent=
-  "Voice is not supported in this browser.";
-  return;
- }
- const msg=new SpeechSynthesisUtterance(
-  "Namaste! Main aapki kya madad kar sakti hoon?"
- );
- msg.lang="hi-IN";
- speechSynthesis.cancel();
- speechSynthesis.speak(msg);
-}
- function listen() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+<p id="status">Microphone dabao aur bolo.</p>
+<p id="heard"></p>
 
-  if (!SpeechRecognition) {
+<button onclick="listen()">🎙️ Bolo</button>
+<select id="lang">
+  <option value="hi-IN">Hindi</option>
+  <option value="en-US">English</option>
+</select>
+
+<script>
+function speak(text) {
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.lang = document.getElementById("lang").value;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(voice);
+}
+
+function listen() {
+  const SR = window.SpeechRecognition ||
+             window.webkitSpeechRecognition;
+
+  if (!SR) {
     document.getElementById("status").textContent =
-      "Chrome mein voice recognition support nahi hai.";
+      "Chrome browser mein website kholo.";
     return;
   }
 
-  const recognition = new SpeechRecognition();
-  recognition.lang = "hi-IN";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
+  const rec = new SR();
+  rec.lang = document.getElementById("lang").value;
 
-  document.getElementById("status").textContent = "Suno, main sun rahi hoon...";
-  recognition.start();
+  document.getElementById("status").textContent =
+    "Sun rahi hoon...";
 
-  recognition.onresult = function(event) {
-    const words = event.results[0][0].transcript;
-    document.getElementById("status").textContent = words;
+  rec.onresult = function(e) {
+    const words = e.results[0][0].transcript;
+    document.getElementById("heard").textContent =
+      "Tumne kaha: " + words;
 
-    const answer = new SpeechSynthesisUtterance(
-      "Aapne kaha " + words + ". Main aapki baat sun rahi hoon."
-    );
-    answer.lang = "hi-IN";
-    speechSynthesis.speak(answer);
-  };
+    const q = words.toLowerCase();
+    let answer;
 
-  recognition.onerror = function() {
+    if (q.includes("namaste") || q.includes("hello") ||
+        q.includes("नमस्ते")) {
+      answer = "Namaste! Aap kaise hain?";
+    } else if (q.includes("naam") || q.includes("नाम")) {
+      answer = "Mera naam Siri Assistant hai.";
+    } else if (q.includes("kaise ho") || q.includes("कैसे हो")) {
+      answer = "Main theek hoon. Aap bataiye.";
+    } else if (q.includes("thank") || q.includes("धन्यवाद")) {
+      answer = "Aapka swagat hai.";
+    } else {
+      answer = "Aapne kaha " + words +
+               ". Main ek basic assistant hoon.";
+    }
+
     document.getElementById("status").textContent =
-      "Microphone permission check karo.";
+      "Jawab: " + answer;
+    speak(answer);
   };
- }
+
+  rec.onerror = function(e) {
+    document.getElementById("status").textContent =
+      "Error: " + e.error +
+      ". Microphone permission aur internet check karo.";
+  };
+
+  rec.onend = function() {
+    document.getElementById("status").textContent +=
+      " — Dobara bolne ke liye mic dabao.";
+  };
+
+  rec.start();
+}
 </script>
+
 </body>
 </html>
