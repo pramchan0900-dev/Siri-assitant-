@@ -4,114 +4,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Siri Assistant</title>
+<title>Siri AI Assistant</title>
 <style>
-body {
-  background: #050510;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 50px 15px;
-}
-.orb {
-  width: 180px;
-  height: 180px;
-  margin: 35px auto;
-  border-radius: 50%;
-  background: conic-gradient(cyan, blue, violet, pink, cyan);
-  box-shadow: 0 0 45px #45dfff;
-  animation: glow 2s infinite alternate;
-}
-@keyframes glow {
-  to { transform: scale(1.08); }
-}
-button, select {
-  padding: 14px;
-  border-radius: 25px;
-  font-size: 18px;
-  margin: 8px;
-}
-#status { color: #8deaff; }
+body{background:#050510;color:white;font-family:Arial,sans-serif;text-align:center;padding:25px}
+.orb{width:150px;height:150px;margin:35px auto;border-radius:50%;background:conic-gradient(cyan,blue,violet,pink,cyan);box-shadow:0 0 45px #45dfff;animation:glow 2s infinite alternate}
+@keyframes glow{to{transform:scale(1.08)}}
+button,select{padding:14px;border-radius:25px;font-size:17px;margin:8px}
+#status{color:#8deaff;white-space:pre-wrap}
 </style>
 </head>
 <body>
-
-<h1>Hey Siri</h1>
+<h1>Hey Siri!</h1>
 <div class="orb"></div>
-<p id="status">Microphone dabao aur bolo.</p>
+<p id="status">Namaste! Bolo, main sun rahi hoon.</p>
 <p id="heard"></p>
-
 <button onclick="listen()">🎙️ Bolo</button>
 <select id="lang">
-  <option value="hi-IN">Hindi</option>
-  <option value="en-US">English</option>
+<option value="hi-IN">Hindi</option>
+<option value="en-US">English</option>
 </select>
 
 <script>
+const API_URL = "https://orange-glitter-96c1.pramchan0900.workers.dev";
+
 function speak(text) {
   const voice = new SpeechSynthesisUtterance(text);
   voice.lang = document.getElementById("lang").value;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(voice);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(voice);
+}
+
+async function askAI(message) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({message})
+  });
+
+  const data = await response.json();
+  if (!response.ok || data.error) {
+    throw new Error(data.error || "AI se jawab nahi mila.");
+  }
+  return data.answer;
 }
 
 function listen() {
-  const SR = window.SpeechRecognition ||
-             window.webkitSpeechRecognition;
-
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     document.getElementById("status").textContent =
-      "Chrome browser mein website kholo.";
+      "Speech recognition supported nahi hai. Chrome mein kholo.";
     return;
   }
 
   const rec = new SR();
   rec.lang = document.getElementById("lang").value;
+  rec.onstart = () => {
+    document.getElementById("status").textContent = "Sun rahi hoon...";
+  };
 
-  document.getElementById("status").textContent =
-    "Sun rahi hoon...";
+  rec.onresult = async (event) => {
+    const words = event.results[0][0].transcript;
+    document.getElementById("heard").textContent = "Tumne kaha: " + words;
+    document.getElementById("status").textContent = "AI soch rahi hai...";
 
-  rec.onresult = function(e) {
-    const words = e.results[0][0].transcript;
-    document.getElementById("heard").textContent =
-      "Tumne kaha: " + words;
-
-    const q = words.toLowerCase();
-    let answer;
-
-    if (q.includes("namaste") || q.includes("hello") ||
-        q.includes("नमस्ते")) {
-      answer = "Namaste! Aap kaise hain?";
-    } else if (q.includes("naam") || q.includes("नाम")) {
-      answer = "Mera naam Siri Assistant hai.";
-    } else if (q.includes("kaise ho") || q.includes("कैसे हो")) {
-      answer = "Main theek hoon. Aap bataiye.";
-    } else if (q.includes("thank") || q.includes("धन्यवाद")) {
-      answer = "Aapka swagat hai.";
-    } else {
-      answer = "Aapne kaha " + words +
-               ". Main ek basic assistant hoon.";
+    try {
+      const answer = await askAI(words);
+      document.getElementById("status").textContent = "Siri: " + answer;
+      speak(answer);
+    } catch (error) {
+      document.getElementById("status").textContent =
+        "Error: " + error.message;
     }
-
-    document.getElementById("status").textContent =
-      "Jawab: " + answer;
-    speak(answer);
   };
 
-  rec.onerror = function(e) {
+  rec.onerror = (event) => {
     document.getElementById("status").textContent =
-      "Error: " + e.error +
-      ". Microphone permission aur internet check karo.";
-  };
-
-  rec.onend = function() {
-    document.getElementById("status").textContent +=
-      " — Dobara bolne ke liye mic dabao.";
+      "Microphone error: " + event.error;
   };
 
   rec.start();
 }
 </script>
-
 </body>
 </html>
